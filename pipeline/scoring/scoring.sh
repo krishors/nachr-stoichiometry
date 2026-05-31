@@ -153,7 +153,7 @@ function cat_table() {
 #   None
 #######################################
 function dimer_add_sum() {
-	gawk -v OFS="\t" -v CONVFMT="%.16g" -M -v PREC=100 '{ $6 = $1 + $2 + $3 + $4 + $5 } 1'
+	awk -v OFS="\t" -v CONVFMT="%.15g" '{ $6 = $1 + $2 + $3 + $4 + $5 } 1'
 }
 
 

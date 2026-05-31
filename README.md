@@ -40,8 +40,9 @@ functions:
    `pdb_chainbows.py`, `pdb_selchain.py` and `pdb_tofasta.py`. These are licensed
    under the Apache License 2.0 and copies are included in this repository.
 
-The pipeline is primarily implemented in `bash` using standard tools included on most
-GNU/Linux systems with some components writted in Python. The pipeline was developed on Ubuntu 22.04.5 LTS.
+The pipeline is primarily implemented in `bash` using standard tools included on
+most GNU/Linux systems with some components writted in Python. The pipeline was
+developed on Ubuntu 22.04 LTS and tested on Debian 12.
 
 [alphafold2]: https://github.com/google-deepmind/alphafold
 [prodigy]: https://github.com/haddocking/prodigy
