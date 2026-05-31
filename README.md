@@ -72,8 +72,10 @@ instead invoke the command defined there.
 To run GDockScore, the GDockScore repository needs to have been cloned locally
 and installed in a virual environment with its dependencies. The path to these
 are given with the environmental variables `GDOCKSCORE_DIR` and
-`GDOCKSCORE_VENV` respectively. These default to folders ~/gdockscore and ~/gdock
-respectively.
+`GDOCKSCORE_VENV` respectively. These default to folders ~/gdockscore and
+~/gdock. To use Conda instead of venv, set the environmental variable
+`GDOCKSCORE_CONDA` to the name of the conda environment (`GDOCKSCORE_DIR` is
+still needed).
 
 
 ## Adding scoring functions

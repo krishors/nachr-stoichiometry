@@ -3,12 +3,15 @@
 # Description: Score model using GDockScore
 #
 # Globals:
-#   GDOCKSCORE_VENV: Python virtual environment with GDockScore and dependencies
-#                    installed.
-#   GDOCKSCORE_DIR:  Directory where GDockScore repository is downloaded to
+#   GDOCKSCORE_DIR:   Directory with GDockScore repository
+#   And:
+#   GDOCKSCORE_VENV:  Python venv with GDockScore and dependencies installed.
+#   Or:
+#   GDOCKSCORE_CONDA: Conda env with GDockScore and dependencies installed.
+#
 #
 # Exposed Functions:
-#   score_gdockscore:     Output scoring values for GDockScore
+#   score_gdockscore: Output scoring values for GDockScore
 # ==============================================================================
 
 
@@ -21,6 +24,7 @@ fi
 if [[ ! -v GDOCKSCORE_DIR ]]; then
 	GDOCKSCORE_DIR="${HOME}/gdockscore"
 fi
+
 
 
 #######################################
@@ -36,13 +40,16 @@ function score_gdockscore() {
 	# Ensure shim is available
 	local shim="${TMPDIR}/gdockscore-shim.sh"
 	if [ ! -e "${shim}" ]; then
-		gdockscore_shim "${GDOCKSCORE_VENV}" "${GDOCKSCORE_DIR}" > "${shim}"
+		if [[ ! -v GDOCKSCORE_CONDA ]]; then
+			gdockscore_shim_venv "${GDOCKSCORE_VENV}" "${GDOCKSCORE_DIR}" > "${shim}"
+		else
+			gdockscore_shim_conda "${GDOCKSCORE_CONDA}" "${GDOCKSCORE_DIR}" > "${shim}"
+		fi
 	fi
 
 	# Run GDockScore
 	for n in $(seq 1 5); do
 		bash "${shim}" "$1/dimer${n}.pdb"
-		awk '{print $2}' "${TMPDIR}/results.txt" | xargs printf "%s"
 		if [ "${n}" -lt 5 ]; then
 			echo -en "\t"
 		fi
@@ -52,7 +59,7 @@ function score_gdockscore() {
 
 
 #######################################
-# Create shim for GDockscore
+# Create shim for GDockscore using venv
 # I/O:
 #   stdout: shim
 # Globals:
@@ -61,7 +68,7 @@ function score_gdockscore() {
 #   1: GDockScore virtual environment path
 #   2: GDockScore directory
 #######################################
-function gdockscore_shim() {
+function gdockscore_shim_venv() {
 	cat << EOF
 # shim for gdockscore generated at $(date "+%Y-%m-%d %H:%M:%S")
 source "$1/bin/activate"
@@ -69,7 +76,30 @@ cwd="\$(pwd)"
 cd "$2" || exit 1
 python3 "./scripts/run_gdockscore.py" --file "\$cwd/\$1" --chain_pair AB 2>&1 |
 	grep -v "NNPACK.cpp:51" 1>&2
-mv results.txt "${TMPDIR}/"
+tail -n 1 "results.txt" | awk '{print \$2}' | xargs printf "%s"
 deactivate
+EOF
+}
+
+
+#######################################
+# Create shim for GDockscore using Conda
+# I/O:
+#   stdout: shim
+# Globals:
+#   None
+# Arguments:
+#   1: Name of Conda environment
+#   2: GDockScore directory
+#######################################
+function gdockscore_shim_conda() {
+	cat << EOF
+# shim for gdockscore generated at $(date "+%Y-%m-%d %H:%M:%S")
+cwd="\$(pwd)"
+cd "$2" || exit 1
+rm -f "results.txt"
+conda run -n "$1" python3 "./scripts/run_gdockscore.py" --file "\$cwd/\$1" --chain_pair AB 2>&1 |
+	grep -v "NNPACK.cpp:51" 1>&2
+tail -n 1 "results.txt" | awk '{print \$2}' | xargs printf "%s"
 EOF
 }
